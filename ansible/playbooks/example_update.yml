@@ -1,0 +1,25 @@
+---
+- name: Mise à jour des paquets système
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Mise à jour du cache apt
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Mise à jour de tous les paquets
+      apt:
+        upgrade: dist
+        autoremove: yes
+
+    - name: Vérifier si un redémarrage est nécessaire
+      stat:
+        path: /var/run/reboot-required
+      register: reboot_required
+
+    - name: Afficher si redémarrage nécessaire
+      debug:
+        msg: "Redémarrage requis sur {{ inventory_hostname }}"
+      when: reboot_required.stat.exists

@@ -1,0 +1,32 @@
+---
+- name: CPAS — Configuration de base
+  hosts: all
+  become: yes
+  gather_facts: yes
+
+  tasks:
+    - name: Vérifier la connectivité
+      ping:
+
+    - name: Mettre à jour le cache apt
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Installer les outils de base
+      apt:
+        name:
+          - curl
+          - wget
+          - htop
+          - net-tools
+          - unattended-upgrades
+        state: present
+
+    - name: Configurer le fuseau horaire
+      timezone:
+        name: Europe/Brussels
+
+    - name: Afficher les informations système
+      debug:
+        msg: "{{ ansible_hostname }} — {{ ansible_distribution }} {{ ansible_distribution_version }} — RAM: {{ ansible_memtotal_mb }}Mo"

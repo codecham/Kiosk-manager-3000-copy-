@@ -1,0 +1,116 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: no
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: no
+
+  backend:
+    build: ./backend
+    env_file: .env
+    networks:
+      - backend-net
+      - frontend-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - ./ansible:/ansible
+      - ssh_keys:/app/ssh_keys
+    environment:
+      - WATCHFILES_FORCE_POLLING=true
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    restart: no
+
+  worker:
+    build: ./backend
+    command: celery -A app.workers.celery_app worker --loglevel=info --concurrency=4
+    env_file: .env
+    networks:
+      - backend-net
+    environment:
+      - WATCHFILES_FORCE_POLLING=true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./ansible:/ansible
+      - ssh_keys:/app/ssh_keys
+    restart: no
+
+  frontend:
+    build:
+      context: ./frontend
+      target: dev
+    command: npm run dev -- --host 0.0.0.0
+    networks:
+      - frontend-net
+    ports:
+      - "${FRONTEND_PORT}:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    env_file: .env
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - VITE_API_URL=${VITE_API_URL}
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: no
+
+  ready:
+    image: alpine
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    command: >
+      sh -c "echo '========================================' &&
+            echo '✅  Application prête !' &&
+            echo '👉  http://localhost:${FRONTEND_PORT}' &&
+            echo '========================================'"
+
+volumes:
+  postgres_data:
+  redis_data:
+  ssh_keys:
+
+networks:
+  backend-net:
+  frontend-net:
