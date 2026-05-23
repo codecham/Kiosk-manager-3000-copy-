@@ -8,6 +8,7 @@ import NavigationSection from './sections/NavigationSection';
 import OverlaysSection from './sections/OverlaysSection';
 import LayoutSection from './sections/LayoutSection';
 import ChartsSection from './sections/ChartsSection';
+import MetierSection from './sections/MetierSection';
 
 interface NavCategory {
   id: string;
@@ -16,14 +17,15 @@ interface NavCategory {
 }
 
 const NAV_CATEGORIES: NavCategory[] = [
-  { id: 'actions', label: 'Actions', count: 3 },
+  { id: 'actions',     label: 'Actions',     count: 4 },
   { id: 'formulaires', label: 'Formulaires', count: 10 },
-  { id: 'affichage', label: 'Affichage', count: 7 },
-  { id: 'feedback', label: 'Feedback', count: 4 },
-  { id: 'navigation', label: 'Navigation', count: 4 },
-  { id: 'overlays', label: 'Overlays', count: 9 },
-  { id: 'mise-en-page', label: 'Mise en page', count: 5 },
-  { id: 'charts', label: 'Charts', count: 6 },
+  { id: 'affichage',   label: 'Affichage',   count: 8 },
+  { id: 'feedback',    label: 'Feedback',    count: 6 },
+  { id: 'navigation',  label: 'Navigation',  count: 4 },
+  { id: 'overlays',    label: 'Overlays',    count: 9 },
+  { id: 'mise-en-page',label: 'Mise en page',count: 5 },
+  { id: 'charts',      label: 'Charts',      count: 6 },
+  { id: 'metier',      label: 'Métier',      count: 3 },
 ];
 
 const NAV_BAR_HEIGHT = 45;
@@ -66,10 +68,8 @@ const scrollToSection = (id: string, scrollContainer: HTMLElement | null): void 
 const centerActiveNavButton = (nav: HTMLDivElement, activeId: string): void => {
   const activeBtn = nav.querySelector<HTMLElement>(`[data-id="${activeId}"]`);
   if (!activeBtn) return;
-
   const targetScrollLeft =
     activeBtn.offsetLeft - nav.offsetWidth / 2 + activeBtn.offsetWidth / 2;
-
   nav.scrollLeft = Math.max(0, targetScrollLeft);
 };
 
@@ -93,15 +93,13 @@ export default function ComponentsPage() {
 
   return (
     <div ref={pageRef} className="-mx-6 -mt-6">
-      {/* Header */}
       <div className="px-6 pt-6 pb-4">
         <h1 className="text-xl font-semibold">Design System</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Vue d'ensemble des {NAV_CATEGORIES.reduce((acc, c) => acc + c.count, 0)} composants UI disponibles.
+          Vue d'ensemble des {NAV_CATEGORIES.reduce((acc, c) => acc + c.count, 0)} composants disponibles.
         </p>
       </div>
 
-      {/* Barre de navigation sticky */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border">
         <div ref={navRef} className="flex gap-1 overflow-x-auto px-6 py-2 scrollbar-none">
           {NAV_CATEGORIES.map(({ id, label, count }) => (
@@ -131,7 +129,6 @@ export default function ComponentsPage() {
         </div>
       </div>
 
-      {/* Contenu */}
       <div className="px-6 py-8 space-y-16 pb-16">
         <ActionsSection />
         <FormsSection />
@@ -141,6 +138,7 @@ export default function ComponentsPage() {
         <OverlaysSection />
         <LayoutSection />
         <ChartsSection />
+        <MetierSection />
       </div>
     </div>
   );

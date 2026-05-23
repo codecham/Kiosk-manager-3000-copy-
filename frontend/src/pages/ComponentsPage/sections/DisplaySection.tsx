@@ -1,4 +1,4 @@
-import { Server } from 'lucide-react';
+import { Server, Monitor, CheckCircle, WifiOff, Tags, PlayCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,17 +6,32 @@ import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Kbd } from '@/components/ui/kbd';
 import { Spinner } from '@/components/ui/spinner';
-// import { Button } from '@/components/ui/button';
+import InfoCard from '@/components/common/InfoCard';
 import ComponentBlock from '../ComponentBlock';
 import SectionWrapper from '../SectionWrapper';
 
 const DisplaySection = () => (
   <SectionWrapper id="affichage" title="Affichage" description="Composants de présentation des données et du contenu.">
+
+    <ComponentBlock title="InfoCard — couleurs" vertical>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+        <InfoCard title="Terminaux" value={24} description="Machines enregistrées" icon={Monitor} color="primary" />
+        <InfoCard title="En ligne" value={21} description="87% de disponibilité" icon={CheckCircle} color="success" />
+        <InfoCard title="Hors ligne" value={3} icon={WifiOff} color="destructive" />
+        <InfoCard title="Groupes" value={5} description="Groupes de terminaux" icon={Tags} color="info" />
+        <InfoCard title="Playbooks" value={12} description="Exécutions cette semaine" icon={PlayCircle} color="warning" />
+        <InfoCard title="Serveurs" value={8} icon={Server} color="default" />
+      </div>
+    </ComponentBlock>
+
     <ComponentBlock title="Badge — variantes">
       <Badge>Default</Badge>
       <Badge variant="secondary">Secondary</Badge>
       <Badge variant="outline">Outline</Badge>
       <Badge variant="destructive">Destructive</Badge>
+      <Badge variant="success">Success</Badge>
+      <Badge variant="warning">Warning</Badge>
+      <Badge variant="info">Info</Badge>
     </ComponentBlock>
 
     <ComponentBlock title="Avatar">
@@ -52,7 +67,7 @@ const DisplaySection = () => (
             <p className="text-sm text-muted-foreground">Ubuntu 22.04 LTS · x86_64</p>
           </CardContent>
           <CardFooter className="gap-2">
-            <Badge variant="default">En ligne</Badge>
+            <Badge variant="success">En ligne</Badge>
             <Badge variant="outline">Production</Badge>
           </CardFooter>
         </Card>
@@ -85,7 +100,7 @@ const DisplaySection = () => (
               <TableCell className="font-medium">kiosk-paris-01</TableCell>
               <TableCell>192.168.1.10</TableCell>
               <TableCell>Ubuntu 22.04</TableCell>
-              <TableCell><Badge variant="default">En ligne</Badge></TableCell>
+              <TableCell><Badge variant="success">En ligne</Badge></TableCell>
             </TableRow>
             <TableRow>
               <TableCell className="font-medium">kiosk-lyon-02</TableCell>
@@ -97,7 +112,7 @@ const DisplaySection = () => (
               <TableCell className="font-medium">srv-backup-01</TableCell>
               <TableCell>10.0.0.5</TableCell>
               <TableCell>CentOS 9</TableCell>
-              <TableCell><Badge variant="outline">Inconnu</Badge></TableCell>
+              <TableCell><Badge variant="warning">Inconnu</Badge></TableCell>
             </TableRow>
           </TableBody>
         </Table>
@@ -131,9 +146,10 @@ const DisplaySection = () => (
       </div>
     </ComponentBlock>
 
-    <ComponentBlock title="Spinner — tailles">
+    <ComponentBlock title="Spinner">
       <Spinner />
     </ComponentBlock>
+
   </SectionWrapper>
 );
 

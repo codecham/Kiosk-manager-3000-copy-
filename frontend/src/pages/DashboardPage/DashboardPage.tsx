@@ -1,31 +1,26 @@
-import { Monitor, Tags, CheckCircle } from 'lucide-react';
+import { Monitor, Tags, CheckCircle, WifiOff, PlayCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import InfoCard from '@/components/common/InfoCard';
 import { useTerminals } from '@/hooks/useTerminals';
 import { useGroups } from '@/hooks/useGroups';
 import { useRuns } from '@/hooks/usePlaybooks';
 import { formatDate } from '@/lib/utils';
 import type { RunStatus } from '@/types/models.types';
 
-const RUN_STATUS_VARIANT: Record<RunStatus, 'default' | 'destructive' | 'outline' | 'ghost'> = {
-  success: 'default',
+const RUN_STATUS_VARIANT: Record<RunStatus, 'success' | 'destructive' | 'info' | 'warning'> = {
+  success: 'success',
   failed: 'destructive',
-  running: 'outline',
-  pending: 'ghost',
+  running: 'info',
+  pending: 'warning',
 };
 
-const StatCard = ({ title, value, icon: Icon, valueClassName }: { title: string; value: number; icon: React.ElementType; valueClassName?: string }) => (
-  <Card>
-    <CardContent className="flex items-center gap-4 p-6">
-      <Icon className="h-8 w-8 text-muted-foreground" />
-      <div>
-        <p className="text-sm text-muted-foreground">{title}</p>
-        <p className={`text-2xl font-bold ${valueClassName ?? ''}`}>{value}</p>
-      </div>
-    </CardContent>
-  </Card>
+const StatsSkeletons = () => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
+  </div>
 );
 
 export default function DashboardPage() {
@@ -34,27 +29,51 @@ export default function DashboardPage() {
   const { data: runs = [] } = useRuns();
 
   const onlineCount = terminals.filter((t) => t.status === 'online').length;
+  const offlineCount = terminals.filter((t) => t.status === 'offline').length;
   const recentRuns = runs.slice(0, 5);
 
   return (
     <div className="space-y-6">
       <h1 className="text-xl font-semibold">Vue d'ensemble</h1>
 
-      {terminalsLoading ? (
-        <div className="grid grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-24" />)}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <StatCard title="Terminaux totaux" value={terminals.length} icon={Monitor} />
-          <StatCard title="En ligne" value={onlineCount} icon={CheckCircle} valueClassName="text-green-600" />
-          <StatCard title="Groupes" value={groups.length} icon={Tags} />
+      {terminalsLoading ? <StatsSkeletons /> : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <InfoCard
+            title="Terminaux"
+            value={terminals.length}
+            description="Machines enregistrées"
+            icon={Monitor}
+            color="primary"
+          />
+          <InfoCard
+            title="En ligne"
+            value={onlineCount}
+            description={`${terminals.length > 0 ? Math.round(onlineCount / terminals.length * 100) : 0}% de disponibilité`}
+            icon={CheckCircle}
+            color="success"
+          />
+          <InfoCard
+            title="Hors ligne"
+            value={offlineCount}
+            icon={WifiOff}
+            color={offlineCount > 0 ? 'destructive' : 'default'}
+          />
+          <InfoCard
+            title="Groupes"
+            value={groups.length}
+            description="Groupes de terminaux"
+            icon={Tags}
+            color="info"
+          />
         </div>
       )}
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Dernières exécutions Ansible</CardTitle>
+          <CardTitle className="text-base flex items-center gap-2">
+            <PlayCircle className="h-4 w-4 text-muted-foreground" />
+            Dernières exécutions Ansible
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -79,7 +98,9 @@ export default function DashboardPage() {
               ))}
               {recentRuns.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground py-8">Aucune exécution récente</TableCell>
+                  <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                    Aucune exécution récente
+                  </TableCell>
                 </TableRow>
               )}
             </TableBody>
