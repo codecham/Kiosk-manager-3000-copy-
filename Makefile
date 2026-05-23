@@ -1,12 +1,16 @@
 # ============================================================
 #  CPAS Manager 3000 — Makefile
 # ============================================================
+include .env
+export
 
-COMPOSE = docker compose
+COMPOSE  = docker compose
 BACKEND  = backend
 WORKER   = worker
 FRONTEND = frontend
 DB       = postgres
+COMPOSE_WITH_TERMINALS = $(COMPOSE) -f docker-compose.yml -f fake-terminals/docker-compose.override.yml
+CONSOLE_URL   := http://localhost:$(FRONTEND_PORT)
 
 .DEFAULT_GOAL := help
 
@@ -110,6 +114,10 @@ health: ## Vérifier la santé de l'API backend
 shell-backend: ## Ouvrir un shell dans le conteneur backend
 	$(COMPOSE) exec $(BACKEND) bash
 
+.PHONY: shell-frontend
+shell-fronted: ## Ouvrir un shell dans le conteneur frontend
+	$(COMPOSE) exec $(FRONTEND) bash
+
 .PHONY: shell-worker
 shell-worker: ## Ouvrir un shell dans le conteneur worker
 	$(COMPOSE) exec $(WORKER) bash
@@ -143,3 +151,35 @@ db-restore: ## Restaurer la BDD depuis ./backup.sql (⚠️ écrase les données
 .PHONY: env
 env: ## Créer le fichier .env depuis .env.example (si absent)
 	@test -f .env && echo "⚠️  .env existe déjà — aucune action." || (cp .env.example .env && echo "✅  .env créé. Pense à modifier les mots de passe !")
+
+# ------------------------------------------------------------
+#  Faux terminaux de test
+# ------------------------------------------------------------
+ 
+.PHONY: dev-with-terminals
+dev-with-terminals: ## 🖥️  Démarre tout + faux terminaux + enrollment automatique
+	$(COMPOSE_WITH_TERMINALS) up -d --build
+	@echo "⏳  Attente que les faux terminaux soient prêts..."
+	@sleep 8
+	@bash fake-terminals/seed.sh $(CONSOLE_URL)
+ 
+.PHONY: seed-terminals
+seed-terminals: ## Enregistre les faux terminaux dans CPAS (si déjà démarrés)
+	@bash fake-terminals/seed.sh $(CONSOLE_URL)
+ 
+.PHONY: logs-terminals
+logs-terminals: ## Logs des faux terminaux (live)
+	$(COMPOSE) logs -f terminal-alpha terminal-beta terminal-gamma
+ 
+.PHONY: reset-with-terminals
+reset-with-terminals: ## ⚠️  Reset complet + redémarre avec les faux terminaux
+	$(MAKE) clean
+	$(MAKE) dev-with-terminals
+
+.PHONY: stop-terminals
+stop-terminals: ## Arrête uniquement les faux terminaux de test
+	$(COMPOSE_WITH_TERMINALS) stop terminal-alpha terminal-beta terminal-gamma
+
+.PHONY: down-terminals
+down-terminals: ## Supprime uniquement les faux terminaux de test
+	$(COMPOSE_WITH_TERMINALS) rm -sf terminal-alpha terminal-beta terminal-gamma
