@@ -9,11 +9,11 @@ import { useRuns } from '@/hooks/usePlaybooks';
 import { formatDate } from '@/lib/utils';
 import type { RunStatus } from '@/types/models.types';
 
-const RUN_STATUS_VARIANT: Record<RunStatus, 'success' | 'destructive' | 'info' | 'warning'> = {
-  success: 'success',
+const RUN_STATUS_VARIANT: Record<RunStatus, 'default' | 'destructive' | 'outline' | 'ghost'> = {
+  success: 'default',
   failed: 'destructive',
-  running: 'info',
-  pending: 'warning',
+  running: 'outline',
+  pending: 'ghost',
 };
 
 const StatCard = ({ title, value, icon: Icon, valueClassName }: { title: string; value: number; icon: React.ElementType; valueClassName?: string }) => (

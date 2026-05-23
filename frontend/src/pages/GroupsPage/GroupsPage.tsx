@@ -28,8 +28,8 @@ type CreateGroupValues = z.infer<typeof createGroupSchema>;
 type GroupSortCol = 'name' | 'terminal_count';
 
 const STATUS_LABEL: Record<TerminalStatus, string> = { online: 'En ligne', offline: 'Hors ligne', unknown: 'Inconnu' };
-const STATUS_VARIANT: Record<TerminalStatus, 'success' | 'destructive' | 'secondary'> = {
-  online: 'success', offline: 'destructive', unknown: 'secondary',
+const STATUS_VARIANT: Record<TerminalStatus, 'default' | 'destructive' | 'secondary'> = {
+  online: 'default', offline: 'destructive', unknown: 'secondary',
 };
 
 export default function GroupsPage() {
@@ -72,7 +72,7 @@ export default function GroupsPage() {
 
   const openUnconfiguredModal = () =>
     setTerminalModal({
-      title: <Badge variant="warning">Non configuré</Badge>,
+      title: <Badge variant="default">Non configuré</Badge>,
       terminals: terminals.filter((t) => t.groups.includes(UNCONFIGURED_TAG)),
     });
 
@@ -113,7 +113,7 @@ export default function GroupsPage() {
               </button>
             ))}
             <button onClick={openUnconfiguredModal} className="flex items-center gap-2 px-3 py-1.5 rounded-md border hover:bg-accent transition-colors text-sm">
-              <Badge variant="warning">Non configuré</Badge>
+              <Badge variant="default">Non configuré</Badge>
               <span className="font-medium">{terminals.filter((t) => t.groups.includes(UNCONFIGURED_TAG)).length}</span>
             </button>
           </div>
@@ -210,7 +210,7 @@ export default function GroupsPage() {
               <FormField control={form.control} name="description" render={({ field }) => (
                 <FormItem><FormLabel>Description</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
               )} />
-              <Button type="submit" className="w-full" isLoading={createGroup.isPending}>Créer</Button>
+              <Button type="submit" className="w-full">Créer</Button>
             </form>
           </Form>
         </DialogContent>

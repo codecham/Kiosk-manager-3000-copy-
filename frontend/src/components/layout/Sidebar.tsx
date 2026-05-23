@@ -1,10 +1,18 @@
-import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Monitor, Tags, PlayCircle, LogOut, ChevronLeft, ChevronRight, Component } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { LayoutDashboard, Monitor, Tags, PlayCircle, LogOut, Component, Sun, Moon, Server } from 'lucide-react';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from '@/components/ui/sidebar';
+import { useTheme } from '@/hooks/useTheme';
 
 const NAV_ITEMS = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -14,69 +22,82 @@ const NAV_ITEMS = [
   { path: '/components', icon: Component, label: 'Composants' },
 ] as const;
 
-export default function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+const isNavItemActive = (path: string, currentPath: string): boolean => {
+  if (path === '/') return currentPath === '/';
+  return currentPath.startsWith(path);
+};
+
+export default function AppSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isDark, toggleTheme } = useTheme();
 
-  const handleLogout = () => {
+  const handleLogout = (): void => {
     localStorage.removeItem('token');
     navigate('/login');
   };
 
   return (
-    <aside className={cn('flex flex-col bg-sidebar text-sidebar-foreground transition-all duration-200', collapsed ? 'w-16' : 'w-56')}>
-      <div className="flex items-center justify-between p-4">
-        {!collapsed && <span className="font-semibold text-sm truncate">CPAS Manager 3000</span>}
-        <Button variant="ghost" size="icon" onClick={() => setCollapsed((v) => !v)} className="text-sidebar-foreground hover:bg-sidebar-accent ml-auto shrink-0">
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </Button>
-      </div>
+    <Sidebar variant="floating" collapsible="icon">
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild>
+              <div className="flex items-center gap-2 cursor-default select-none">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground shrink-0">
+                  <Server className="h-4 w-4" />
+                </div>
+                <div className="flex flex-col leading-none">
+                  <span className="font-semibold text-sm">CPAS Manager</span>
+                  <span className="text-xs text-muted-foreground">3000</span>
+                </div>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
 
-      <Separator className="bg-sidebar-border" />
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {NAV_ITEMS.map(({ path, icon: Icon, label }) => (
+                <SidebarMenuItem key={path}>
+                  <SidebarMenuButton
+                    isActive={isNavItemActive(path, location.pathname)}
+                    tooltip={label}
+                    onClick={() => navigate(path)}
+                  >
+                    <Icon />
+                    <span>{label}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
 
-      <nav className="flex-1 p-2 space-y-1">
-        {NAV_ITEMS.map(({ path, icon: Icon, label }) => {
-          const isActive = location.pathname === path || (path !== '/' && location.pathname.startsWith(path));
-          return (
-            <Tooltip key={path} delayDuration={0}>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => navigate(path)}
-                  className={cn(
-                    'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors',
-                    isActive
-                      ? 'bg-sidebar-primary text-sidebar-primary-foreground'
-                      : 'text-sidebar-foreground hover:bg-sidebar-accent',
-                    collapsed && 'justify-center',
-                  )}
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  {!collapsed && <span>{label}</span>}
-                </button>
-              </TooltipTrigger>
-              {collapsed && <TooltipContent side="right">{label}</TooltipContent>}
-            </Tooltip>
-          );
-        })}
-      </nav>
-
-      <Separator className="bg-sidebar-border" />
-
-      <div className="p-2">
-        <Tooltip delayDuration={0}>
-          <TooltipTrigger asChild>
-            <button
-              onClick={handleLogout}
-              className={cn('w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-sidebar-foreground hover:bg-sidebar-accent transition-colors', collapsed && 'justify-center')}
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              tooltip={isDark ? 'Mode clair' : 'Mode sombre'}
+              onClick={toggleTheme}
             >
-              <LogOut className="h-4 w-4 shrink-0" />
-              {!collapsed && <span>Déconnexion</span>}
-            </button>
-          </TooltipTrigger>
-          {collapsed && <TooltipContent side="right">Déconnexion</TooltipContent>}
-        </Tooltip>
-      </div>
-    </aside>
+              {isDark ? <Sun /> : <Moon />}
+              <span>{isDark ? 'Mode clair' : 'Mode sombre'}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton tooltip="Déconnexion" onClick={handleLogout}>
+              <LogOut />
+              <span>Déconnexion</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+    </Sidebar>
   );
 }
